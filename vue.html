@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script type="text/javascript" src='vue.min.js'></script>
+    <script type="text/javascript" src="vue-router.min.js"></script>
+<style type="text/css">
+    .form {
+        border: 1px solid;
+        width: 600px;
+        margin: 100px auto 0px;
+        position: relative;
+        /*          height: 500px;*/
+        padding: 10px 20px;
+    }
+
+    header {
+        position: absolute;
+        top: -15px;
+        left: 10px;
+        background: #fff;
+        padding: 5px;
+    }
+
+    form p input,
+    form p select {
+        width: 200px;
+        height: 25px;
+        line-height: 25px;
+        padding-left: 10px;
+        box-sizing: border-box;
+    }
+
+    .btn {
+        padding: 5px;
+        border-radius: 7px;
+        background: #888;
+        color: #fff;
+        outline: none;
+        border: 1px solid #6d6667;
+        cursor: pointer;
+    }
+
+    .btn:active {
+        transform: scale(.9);
+    }
+
+    section {
+        border: 1px solid;
+        width: 640px;
+        margin: 40px auto;
+    }
+
+    table {
+        width: 100%;
+        text-align: center;
+    }
+
+    th {
+        background: #a2a1a1;
+        margin: 0px 3px;
+    }
+
+    .state {
+        /*background: #ccc;*/
+        color: #ccc;
+    }
+
+    .nav button {
+        padding: 5px 10px;
+        border: 1px solid transparent;
+        outline: none;
+        background: #fff;
+        margin: 10px 20px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+    .nav .active {
+        border: 1px solid #f67;
+        box-sizing: border-box;
+    }
+
+    .switch {
+        display: none;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="box">
+        <div class="form">
+            <header>学籍管理系统</header>
+            <form>
+                <p>姓名：
+                    <input type="text" id="name" placeholder="请输入用户名" v-model='values.name'>
+                </p>
+                <p>年龄：
+                    <input type="number" id="age" placeholder="请输入年龄" v-model='values.age'>
+                </p>
+                <p>性别：
+                    <select id="sex" v-model='values.sex'>
+                        <option disabled value=''>请选择</option>
+                        <option>男</option>
+                        <option>女</option>
+                    </select>
+                </p>
+                <p>手机：
+                    <input type="text" id="cell" placeholder="请输入手机号" v-model='values.cell'>
+                </p>
+                <input type="button" value="创建新信息" class="btn" v-on:click='add($event)'>
+            </form>
+        </div>
+        <section>
+            <table>
+                <thead>
+                    <tr>
+                        <th>状态</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>年龄</th>
+                        <th>手机</th>
+                        <th>删除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for='(arr, index) in arrs' :key="index" :class='{state:arr.flag , switch:arr.control}' :data-a='control'>
+                        <td>
+                            <input type='checkbox' v-model='arr.flag'></input>
+                        </td>
+                        <td>{{arr.name}}</td>
+                        <td>{{arr.sex}}</td>
+                        <td>{{arr.age}}</td>
+                        <td>{{arr.cell}}</td>
+                        <td>
+                            <input type='button' value="删除" class='btn' @click='del(index)'></input>
+                        </td>
+                    </tr>
+                    <tr class="nav">
+                        <td colspan="6">
+                            <child @tab="tab1" :btn-index="btnIndex"></child>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+    <script type="text/javascript">
+    var vm = new Vue({
+        el: '#box',
+        data: {
+            arrs: [{
+                name: '小明',
+                sex: '男',
+                age: 16,
+                cell: 7687678876587,
+                flag: false
+            }, {
+                name: '小明',
+                sex: '男',
+                age: 16,
+                cell: 7687678876587,
+                flag: false
+            }, {
+                name: '小明',
+                sex: '男',
+                age: 16,
+                cell: 7687678876587,
+                flag: false
+            }],
+            values: {
+                name: '',
+                age: '',
+                sex: '',
+                cell: '',
+                flag: false
+            },
+
+            btnIndex: 0,
+            control: 0,
+            tudo: 0
+        },
+        methods: {
+            load() {
+                // console.log(this.checkedNames);
+                if (localStorage.getItem('key')) {
+                    this.arrs = JSON.parse(localStorage.getItem('key'));
+                };
+            },
+            add() {
+                console.log(this.values)
+                this.arrs.unshift(this.values);
+                localStorage.setItem('key', JSON.stringify(this.arrs));
+                this.values = { name: '', age: '', sex: '', cell: '', }
+            },
+            del(index) {
+                console.log(index);
+                this.arrs.splice(index, 1);
+                localStorage.setItem('key', JSON.stringify(this.arrs));
+            },
+            tab1(index) {
+                this.btnIndex = index;
+                console.log(index)
+            }
+
+        },
+        // 将组件定义为局部
+        components: {
+            // 组件名称：组件配置
+            'child': {
+                template: `<div><button @click="tab1(0)" :class="{active:btnIndex===0}">全部</button><button @click="tab1(1)" :class="{active:btnIndex===1}">选中</button><button @click="tab1(2)" :class="{active:btnIndex===2}">未选中</button></div>`,
+                props: ['btnIndex'],
+                data: function() {
+                    return {
+                        add: 1
+                    };
+                },
+                //dom渲染完毕
+                mounted: function() {},
+                //子组件方法
+                methods: {
+                    tab1(index) {
+                        // 子组件方法名 taba
+                        this.$emit('tab', index);
+                    }
+                },
+                created: function() {
+
+                },
+
+                watch: {
+
+                },
+                computed: {
+
+                },
+            }
+        }
+    });
+    vm.load();
+    </script>
+</body>
+
+</html>
